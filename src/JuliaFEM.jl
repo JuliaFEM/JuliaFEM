@@ -3,10 +3,18 @@
 
 # __precompile__()
 
+push!(LOAD_PATH, Pkg.dir("JuliaFEM") * "/subpackages")
+
 """
 This is JuliaFEM -- Finite Element Package
 """
 module JuliaFEM
+
+using FEMSparse
+import FEMSparse: get_nonzero_rows, get_nonzero_columns
+
+# Magic stuff to make life with SparseMatrixCSC easier
+include("sparse.jl")
 
 using TimerOutputs
 const to = TimerOutput()
@@ -17,7 +25,7 @@ export print_statistics
 
 import Base: getindex, setindex!, convert, length, size, isapprox, similar,
              start, first, next, done, last, endof, vec, ==, +, -, *, /, haskey, copy,
-             push!, isempty, empty!, append!, sparse, full, read
+             push!, isempty, empty!, append!, sparse, full, read, resize!
 
 using Logging
 
@@ -38,7 +46,7 @@ module Testing
 end
 
 include("fields.jl")
-export Field, DCTI, DVTI, DCTV, DVTV, CCTI, CVTI, CCTV, CVTV, Increment
+export Field, DCTI, DVTI, DCTV, DVTV, CCTI, CVTI, CCTV, CVTV, Increment, isconstant
 
 include("types.jl")  # data types: Point, IntegrationPoint, ...
 export AbstractPoint, Point, IntegrationPoint, IP, Node
@@ -47,7 +55,7 @@ export AbstractPoint, Point, IntegrationPoint, IP, Node
 include("elements.jl") # common element routines
 export Node, AbstractElement, Element, update!, get_connectivity, get_basis,
        get_dbasis, inside, get_local_coordinates, get_element_type,
-       filter_by_element_type, get_element_id
+       filter_by_element_type, get_element_id, get_nodal_value
 
 include("elements_lagrange.jl") # Continuous Galerkin (Lagrange) elements
 export get_reference_coordinates,
@@ -69,9 +77,6 @@ export NSeg, NSurf, NSolid, is_nurbs
 
 include("integrate.jl")  # default integration points for elements
 export get_integration_points
-
-include("sparse.jl")
-export add!, SparseMatrixCOO, SparseVectorCOO, get_nonzero_rows, get_nonzero_columns, optimize!, resize_sparse, resize_sparsevec
 
 include("problems.jl") # common problem routines
 export Problem, AbstractProblem, FieldProblem, BoundaryProblem,
@@ -116,7 +121,7 @@ export AbstractSolver, Solver, Nonlinear, NonlinearSolver, Linear, LinearSolver,
        get_field_problems, get_boundary_problems,
        get_field_assembly, get_boundary_assembly,
        initialize!, create_projection, eliminate_interior_dofs,
-       is_field_problem, is_boundary_problem
+       is_field_problem, is_boundary_problem, get_solution_vector
 include("solvers_modal.jl")
 export Modal
 
@@ -149,16 +154,27 @@ export aster_create_elements, parse_aster_med_file, is_aster_mail_keyword,
 end
 
 module Postprocess
+
+using JuliaFEM
+using FEMSparse
+using DataFrames
+using HDF5
+using LightXML
+using Formatting
+
 include("postprocess_utils.jl")
 export calc_nodal_values!, get_nodal_vector, get_nodal_dict, copy_field!,
        calculate_area, calculate_center_of_mass,
        calculate_second_moment_of_mass, extract
+
 end
 
 module Abaqus
 include("abaqus.jl")
 export abaqus_read_model, abaqus_run_model, abaqus_open_results, create_surface_elements
 end
+
+include("deprecated.jl")
 
 end
 
