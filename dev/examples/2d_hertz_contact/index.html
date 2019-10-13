@@ -117,7 +117,7 @@ close(xdmf)</code></pre><pre><code class="language-none">[ Info: ---------------
 [ Info: 144 | 0 | 1 |  0 |  0 | 2.968 | 0.0 | -2.968
 [ Info: 145 | 0 | 1 |  0 |  0 | 12.757 | 0.0 | -12.757
 [ Info: Solving linear system.
-[ Info: Solved linear system in 0.12 seconds using solver 1. Solution norms (||u||, ||la||): (2.593394620027438e15, 31677.866594832423).
+[ Info: Solved linear system in 0.13 seconds using solver 1. Solution norms (||u||, ||la||): (2.593394620027438e15, 31677.866594832423).
 [ Info:
 [ Info: --------------------------------------------------------------------------------
 [ Info: Starting nonlinear iteration #2
@@ -134,7 +134,7 @@ close(xdmf)</code></pre><pre><code class="language-none">[ Info: ---------------
 [ Info: 144 | 1 | 0 |  0 |  1 | -1.932419818881688e15 | 0.0 | 1.932419818881688e15
 [ Info: 145 | 1 | 0 |  0 |  1 | -1.900612784520093e15 | 0.0 | 1.900612784520093e15
 [ Info: Solving linear system.
-[ Info: Solved linear system in 0.72 seconds using solver 3. Solution norms (||u||, ||la||): (2.5933946200274195e15, 82357.76148154144).
+[ Info: Solved linear system in 0.83 seconds using solver 3. Solution norms (||u||, ||la||): (2.5933946200274195e15, 82357.76148154144).
 [ Info:
 [ Info: --------------------------------------------------------------------------------
 [ Info: Starting nonlinear iteration #3
@@ -185,7 +185,7 @@ close(xdmf)</code></pre><pre><code class="language-none">[ Info: ---------------
 [ Info: 144 | 1 | 0 |  0 |  1 | -0.0 | 583.517 | 583.517
 [ Info: 145 | 0 | 1 |  0 |  0 | 7.788 | 0.0 | -7.788
 [ Info: Solving linear system.
-[ Info: Solved linear system in 0.01 seconds using solver 3. Solution norms (||u||, ||la||): (3.7284885454952755e-14, 11615.58641265997).
+[ Info: Solved linear system in 0.02 seconds using solver 3. Solution norms (||u||, ||la||): (3.7284885454952755e-14, 11615.58641265997).
 [ Info:
 [ Info: Converged in 5 iterations.
 [ Info: Postprocessing 6 problems.</code></pre><h1><a class="nav-anchor" id="Results-1" href="#Results-1">Results</a></h1><p>Results are stored in <code>2d_hertz_results.xmf</code> and <code>2d_hertz_results.h5</code> for visual inspection. We can also postprocess results programmatically because we are inside a real scripting / programming environment all the time.  For example, we can integrate the resultant force in normal and tangential direction in contact surface to validate our result.</p><pre><code class="language-julia">Rn = 0.0
