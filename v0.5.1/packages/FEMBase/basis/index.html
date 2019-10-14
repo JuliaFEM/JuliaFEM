@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Basis functions · JuliaFEM.jl</title><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-83590644-1', 'auto');
+ga('send', 'pageview');
+</script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link href="../../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>JuliaFEM.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../../">Home</a></li><li><span class="toctext">User&#39;s guide</span></li><li><span class="toctext">Examples</span><ul><li><a class="toctext" href="../../../examples/2d_hertz_contact/">2D Hertz contact problem</a></li><li><a class="toctext" href="../../../examples/3d_frame/">Natural frequency analysis of 3d frame structure</a></li><li><a class="toctext" href="../../../examples/generate_stiffness_matrices/">Generating local matrices for problems</a></li><li><a class="toctext" href="../../../examples/linear_static/">JuliaFEM Linear Static Example</a></li></ul></li><li><span class="toctext">Developer&#39;s guide</span><ul><li><a class="toctext" href="../mesh/">Mesh</a></li><li><a class="toctext" href="../fields/">Fields</a></li><li class="current"><a class="toctext" href>Basis functions</a><ul class="internal"><li><a class="toctext" href="#Mathematics-1">Mathematics</a></li><li><a class="toctext" href="#Defining-custom-shape-functions-1">Defining custom shape functions</a></li></ul></li><li><a class="toctext" href="../integration/">Integration</a></li><li><a class="toctext" href="../elements/">Elements</a></li><li><a class="toctext" href="../problems/">Problems</a></li><li><a class="toctext" href="../solvers/">Analyses and solvers</a></li><li><a class="toctext" href="../postprocessing/">Postprocessing</a></li><li><a class="toctext" href="../results/">Results</a></li><li><a class="toctext" href="../materials/">Materials</a></li></ul></li><li><span class="toctext">Description of packages</span><ul><li><a class="toctext" href="../">FEMBase.jl</a></li><li><a class="toctext" href="../../AsterReader/">AsterReader.jl</a></li><li><a class="toctext" href="../../AbaqusReader/">AbaqusReader.jl documentation</a></li><li><a class="toctext" href="../../HeatTransfer/">HeatTransfer.jl</a></li><li><a class="toctext" href="../../FEMBeam/">Introduction</a></li><li><a class="toctext" href="../../MortarContact2D/">MortarContact2D.jl</a></li><li><a class="toctext" href="../../MortarContact2DAD/">MortarContact2DAD.jl</a></li></ul></li><li><span class="toctext">API documentation</span><ul><li><a class="toctext" href="../../../api/">API documentation</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li>Developer&#39;s guide</li><li><a href>Basis functions</a></li></ul><a class="edit-page" href="https://github.com/JuliaFEM/JuliaFEM.jl/blob/master/docs/src/packages/FEMBase/basis.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Basis functions</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Basis-functions-1" href="#Basis-functions-1">Basis functions</a></h1><div></div><p>Shape functions, also known as basis functions, interpolation polynomials and so on. Typically unknown field variable is interpolated from element nodal values using continuous functions. That is, </p><div>\[u(\xi,t) = \sum_{i} N(\xi,t) u_{i}[t]\]</div><p>math</p><p>Standard Lagrange shape functions are implemented.</p><p>Linear shape functions:</p><ul><li>Seg2 (2-node segment)</li><li>Tri3 (3-node triangle)</li><li>Quad4 (4-node quadrangle)</li><li>Tet4 (4-node tetrahedron)</li><li>Pyr5 (5-node pyramid)</li><li>Wedge6 (6-node wedge)</li><li>Hex8 (8-node hexahedra)</li></ul><p>Quadratic and biquadratic shape functions:</p><ul><li>Seg3</li><li>Tri6, Tri7</li><li>Quad8, Quad9</li><li>Tet10</li><li>Wedge15</li><li>Hex20, Hex27</li></ul><p>NURBS shape functions:</p><ul><li>NSeg</li><li>NSurf</li><li>NSolid</li></ul><p>Creating new basis is done simply by calling that constructor, without any arguments:</p><pre><code class="language-julia-repl">julia&gt; Seg2()
+ERROR: UndefVarError: Seg2 not defined
+
+julia&gt; Tri3()
+ERROR: UndefVarError: Tri3 not defined
+
+julia&gt; Quad4()
+ERROR: UndefVarError: Quad4 not defined</code></pre><p>The dimensions of basis functions can be determined by <code>size</code> and <code>length</code>. In JuliaFEM, we have a convention that arrays grow on right according to number of nodes and down according to the spatial index. So if we have a row vector <span>$\boldsymbol N$</span> and a column vector <span>$\boldsymbol u$</span>, interpolation goes <span>$u = \boldsymbol N \boldsymbol u$</span>:</p><pre><code class="language-julia-repl">julia&gt; N = [1 2 3] # evaluated basis functions
+1×3 Array{Int64,2}:
+ 1  2  3
+
+julia&gt; u = [1, 2, 3] # field value at discrete points
+3-element Array{Int64,1}:
+ 1
+ 2
+ 3
+
+julia&gt; N*u
+1-element Array{Int64,1}:
+ 14</code></pre><p>For example, <code>Quad4</code> is defined in two dimensions and it has 4 nodes, so</p><pre><code class="language-julia-repl">julia&gt; B = Quad4()
+ERROR: UndefVarError: Quad4 not defined
+
+julia&gt; size(B)
+ERROR: UndefVarError: B not defined
+
+julia&gt; length(B)
+ERROR: UndefVarError: B not defined</code></pre><p>Evaluating basis functions and they partial derivatives with respect to some <span>$\xi$</span> is done efficiently using <code>eval_basis!</code> and <code>eval_dbasis!</code>. For these commands one needs to allocate array outside of the hot loops to get speed.</p><pre><code class="language-julia-repl">julia&gt; N = zeros(1, length(B))
+ERROR: UndefVarError: B not defined
+
+julia&gt; dN = zeros(size(B)...)
+ERROR: UndefVarError: B not defined
+
+julia&gt; xi = (0.0, 0.0)
+(0.0, 0.0)
+
+julia&gt; eval_basis!(B, N, xi)
+ERROR: UndefVarError: eval_basis! not defined
+
+julia&gt; eval_dbasis!(B, dN, xi)
+ERROR: UndefVarError: eval_dbasis! not defined</code></pre><p>For Langrange interpolation polynomials, by definition, on each node shape function corresponding to that node gets value of 1 and the rest is zero. Node ordering follows the same defined in e.g. in ABAQUS and in many other FEM softwares. The actual shape of domain can be inspected using command <code>get_reference_element_coordinates</code>:</p><pre><code class="language-julia-repl">julia&gt; get_reference_element_coordinates(Quad4)
+ERROR: UndefVarError: get_reference_element_coordinates not defined</code></pre><pre><code class="language-">for xi in get_reference_element_coordinates(Quad4)
+    eval_basis!(B, N, xi)
+    println(&quot;$N at $xi&quot;)
+end</code></pre><h2><a class="nav-anchor" id="Mathematics-1" href="#Mathematics-1">Mathematics</a></h2><p>Without knowing anything about the shape of the real domain (after all, basis is usually defined on dimensionless, reference domain), <code>eval_dbasis!</code> is calculating gradient with respect to dimensionless coordinates <span>$\xi_i$</span>, i.e.</p><div>\[\left(\frac{\partial\boldsymbol{N}}{\partial\boldsymbol{\xi}}\right)_{ij}=\frac{\partial N_{j}}{\partial\xi_{i}}\]</div><p>Usually this is not wanted, but instead gradient of basis functions is calculated with respect to natural coordinates <span>$X_i$</span>,</p><div>\[\left(\frac{\partial\boldsymbol{N}}{\partial\boldsymbol{X}}\right)_{ij}=\frac{\partial N_{j}}{\partial X_{i}}\]</div><p>Without going into the mathematical details, to transform partial derivatives from reference element to natural coordinates, inverse of Jacobian matrix is needed.</p><pre><code class="language-julia-repl">julia&gt; X = ([0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0])
+([0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0])
+
+julia&gt; xi = (0.0, 0.0)
+(0.0, 0.0)
+
+julia&gt; J = jacobian(B, X, xi)
+ERROR: UndefVarError: jacobian not defined
+
+julia&gt; inv(J) * dN
+ERROR: UndefVarError: J not defined</code></pre><p>Or directly, using <code>grad</code>:</p><pre><code class="language-julia-repl">julia&gt; dNdX = grad(B, X, xi)
+ERROR: UndefVarError: grad not defined</code></pre><p>If interpolation domain is a manifold, i.e. space having lower dimension than the actual space (read: surface in 3d), Jacobian is not square and inverse cannot be taken.</p><pre><code class="language-julia-repl">julia&gt; X2 = ([0.0,0.0,0.0], [1.0, 0.0,1.0], [1.0,1.0,1.0], [0.0,1.0,0.0])
+([0.0, 0.0, 0.0], [1.0, 0.0, 1.0], [1.0, 1.0, 1.0], [0.0, 1.0, 0.0])
+
+julia&gt; xi = (0.0, 0.0)
+(0.0, 0.0)
+
+julia&gt; J = jacobian(B, X2, xi)
+ERROR: UndefVarError: jacobian not defined</code></pre><p>One can use Jacobian to calculate <a href="https://en.wikipedia.org/wiki/Surface_integral">surface integral</a>:</p><div>\[\iint_{S}f\,\mathrm{d}\Sigma=\iint_{T}f\left(\boldsymbol{x}\left(s,t\right)\right)\left\Vert \frac{\partial\boldsymbol{x}}{\partial s}\times\frac{\partial\boldsymbol{x}}{\partial t}\right\Vert \,\mathrm{d}s\mathrm{d}t\]</div><pre><code class="language-julia-repl">julia&gt; 4*norm(cross(J[1,:], J[2,:])), sqrt(2) # area of manifold
+ERROR: UndefVarError: J not defined</code></pre><p>Gradient of e.g. displacement field or temperature field can be also evaluated, with the same <code>grad</code> function, by adding field <code>u</code>:</p><pre><code class="language-julia-repl">julia&gt; u = ([0.0, 0.0], [1.0, -1.0], [2.0, 3.0], [0.0, 0.0])
+([0.0, 0.0], [1.0, -1.0], [2.0, 3.0], [0.0, 0.0])
+
+julia&gt; T = (1.0, 2.0, 3.0, 4.0)
+(1.0, 2.0, 3.0, 4.0)
+
+julia&gt; grad(B, u, X, xi)
+ERROR: UndefVarError: grad not defined
+
+julia&gt; grad(B, T, X, xi)
+ERROR: UndefVarError: grad not defined</code></pre><p>One can interpolate fields using basis, i.e. calculate <span>$u = \boldsymbol{N}\boldsymbol{u}$</span> as described before:</p><pre><code class="language-julia-repl">julia&gt; interpolate(B, u, xi)
+ERROR: UndefVarError: interpolate not defined
+
+julia&gt; interpolate(B, T, xi)
+ERROR: UndefVarError: interpolate not defined</code></pre><p>In &quot;hot loops&quot;, it&#39;s absolutely necessary that no unnecessary memory allcations happen as it is reducing the performance dramatically from C speed. To avoid unnecessary memory allocations, a struct <code>BasisInfo</code> is introduced, containing workspace for calculations.</p><pre><code class="language-julia-repl">julia&gt; bi = BasisInfo(Quad4)
+ERROR: UndefVarError: BasisInfo not defined
+
+julia&gt; eval_basis!(bi, X, xi)
+ERROR: UndefVarError: eval_basis! not defined
+
+julia&gt; bi.J       # Jacobian
+ERROR: UndefVarError: bi not defined
+
+julia&gt; bi.N       # shape functions
+ERROR: UndefVarError: bi not defined
+
+julia&gt; bi.dN      # shape function derivatives, with respect to xi
+ERROR: UndefVarError: bi not defined
+
+julia&gt; bi.detJ    # determinant of Jacobian
+ERROR: UndefVarError: bi not defined
+
+julia&gt; bi.grad    # shape function derivatives, with respect to X
+ERROR: UndefVarError: bi not defined
+
+julia&gt; bi.invJ    # inverse of Jacobian
+ERROR: UndefVarError: bi not defined</code></pre><p>Calculating gradient of some field <code>u</code> can be done memory efficiently using this <code>BasisInfo</code> structure:</p><pre><code class="language-julia-repl">julia&gt; gradu = zeros(2, 2)
+2×2 Array{Float64,2}:
+ 0.0  0.0
+ 0.0  0.0
+
+julia&gt; grad!(bi, gradu, u)
+ERROR: UndefVarError: grad! not defined</code></pre><h2><a class="nav-anchor" id="Defining-custom-shape-functions-1" href="#Defining-custom-shape-functions-1">Defining custom shape functions</a></h2><p>Depending from the type of shape functions, they can be created more or less automatic way. An ultimate goal is to create all kind of shape functions just by defining the general principles and let computer handle the all boring things and create shape functions automatically using metaprogramming to get efficient code.</p><p>For Lagrange type interpolation, ones needs only to define polynomial and corner points for domain. For example, if domain is <span>$[0,1]^2$</span>, one can use <code>create_basis</code>, and give polynomial with degree matching to the number of point to interpolate.</p><pre><code class="language-julia-repl">julia&gt; code = create_basis(
+           :MyQuad,
+           &quot;My special domain&quot;,
+           (
+               (0.0, 0.0),
+               (1.0, 0.0),
+               (1.0, 1.0),
+               (0.0, 1.0),
+           ),
+           &quot;1 + u + v + u*v&quot;
+       );
+ERROR: UndefVarError: create_basis not defined
+
+julia&gt; eval(code)
+ERROR: UndefVarError: code not defined</code></pre><p>What we have defined is a interpolation polynomial and &quot;corner points&quot;. As a result, we have a new basis <code>MyQuad</code>, working just like expected. All Lagrange polynomials are done like this.</p><pre><code class="language-julia-repl">julia&gt; B = MyQuad()
+ERROR: UndefVarError: MyQuad not defined
+
+julia&gt; xi = (0.5, 0.5)
+(0.5, 0.5)
+
+julia&gt; eval_basis!(B, N, xi)
+ERROR: UndefVarError: eval_basis! not defined</code></pre><p>In this case, and considering domain, partial derivatives of shape functions are with respect to <span>$X$</span>, because interpolation polynomials are calculated against real domain and not &quot;reference domain&quot;. That is, partial derivatives should match to what already calcualated.</p><pre><code class="language-julia-repl">julia&gt; eval_dbasis!(B, dN, xi)
+ERROR: UndefVarError: eval_dbasis! not defined</code></pre><p>Jacobian should be identity matrix:</p><pre><code class="language-julia-repl">julia&gt; J = jacobian(B, X, xi)
+ERROR: UndefVarError: jacobian not defined</code></pre><p>And taking gradient with respect to <span>$X$</span> should return also same result than before:</p><pre><code class="language-julia-repl">julia&gt; u = ([0.0, 0.0], [1.0, -1.0], [2.0, 3.0], [0.0, 0.0])
+([0.0, 0.0], [1.0, -1.0], [2.0, 3.0], [0.0, 0.0])
+
+julia&gt; grad(B, u, X, xi)
+ERROR: UndefVarError: grad not defined</code></pre><p>Shape functions can be defined manually and calculate partial derivatives automatically. For example, for pyramid elements typical ansatz approach is not applicable. Some other degenerated elements exists in fracture mechanics.</p><p>For example, C1-continuous Hermite shape functions ready to approximate Euler-Bernoulli beam equations can be defined as:</p><pre><code class="language-julia-repl">julia&gt; code = create_basis(
+           :C1Hermite,
+           &quot;C1-continuous Hermite shape functions&quot;,
+           (
+               (0.0,),
+               (0.0,),
+               (1.0,),
+               (1.0,)
+           ),
+           (
+               &quot;2*u^3 - 3*u^2 + 1&quot;,
+               &quot;u^3 - 2*u^2 + u&quot;,
+               &quot;-2*u^3 + 3*u^2&quot;,
+               &quot;u^3 - u^2&quot;
+           )
+       );
+ERROR: UndefVarError: create_basis not defined
+
+julia&gt; eval(code)
+ERROR: UndefVarError: code not defined</code></pre><p>Again, we should have 1.0 in corresponding nodal point or it&#39;s derivative, according to that order we have <span>$u(0), u&#39;(0), u(1), u&#39;(1)$</span>, so</p><pre><code class="language-julia-repl">julia&gt; B = C1Hermite()
+ERROR: UndefVarError: C1Hermite not defined
+
+julia&gt; N = zeros(1, 4)
+1×4 Array{Float64,2}:
+ 0.0  0.0  0.0  0.0
+
+julia&gt; dN = zeros(1, 4)
+1×4 Array{Float64,2}:
+ 0.0  0.0  0.0  0.0
+
+julia&gt; eval_basis!(B, N, (0.0,))
+ERROR: UndefVarError: eval_basis! not defined
+
+julia&gt; eval_dbasis!(B, dN, (0.0,))
+ERROR: UndefVarError: eval_dbasis! not defined
+
+julia&gt; eval_basis!(B, N, (1.0,))
+ERROR: UndefVarError: eval_basis! not defined
+
+julia&gt; eval_dbasis!(B, dN, (1.0,))
+ERROR: UndefVarError: eval_dbasis! not defined</code></pre><p>The last option is to build everything from scratch. For that, one must import and define following functions:</p><ul><li>Base.size</li><li>Base.length</li><li>FEMBase.get<em>reference</em>element_coordinates</li><li>FEMBase.eval_basis!</li><li>FEMBase.eval_dbasis!</li></ul><p>As an examples, a simple implementation of P-hierarchical 1d-basis would then be the following:</p><pre><code class="language-">import Base: size, length
+import FEMBase: get_reference_element_coordinates,
+                eval_basis!, eval_dbasis!,
+                AbstractBasis
+
+type PSeg &lt;: AbstractBasis
+    order :: Int
+end
+
+function PSeg()
+    return PSeg(1)
+end
+
+function length(basis::PSeg)
+    return basis.order+1
+end
+
+function size(basis::PSeg)
+    return (1, basis.order+1)
+end
+
+function get_reference_element_coordinates(basis::PSeg)
+    return ((-1.0,), (1.0,))
+end
+
+nothing # hide</code></pre><p>Next, define Legengre polynomials:</p><pre><code class="language-julia">&quot;&quot;&quot;
+    get_legendre_polynomial(n)
+
+Return Legendgre polynomial of order `n` to inverval ξ ∈ [1, 1].
+
+Implementation uses Bonnet&#39;s recursion formula. See
+https://en.wikipedia.org/wiki/Legendre_polynomials
+&quot;&quot;&quot;
+function get_legendre_polynomial(n)
+    n == 0 &amp;&amp; return xi -&gt; 1.0
+    n == 1 &amp;&amp; return xi -&gt; xi
+    Pm1 = get_legendre_polynomial(n-1)
+    Pm2 = get_legendre_polynomial(n-2)
+    A(xi) = (2.0*n-1.0)*xi*Pm1(xi)
+    B(xi) = (n-1.0)*Pm2(xi)
+    return xi -&gt; (A(xi)-B(xi))/n
+end
+
+&quot;&quot;&quot;
+    get_legendre_polynomial_derivative(n)
+
+Return derivative of Legendgre polynomial of order `n` to
+inverval ξ ∈  [-1, 1]
+&quot;&quot;&quot;
+function get_legendre_polynomial_derivative(n)
+    n == 0 &amp;&amp; return xi -&gt; 0.0
+    n == 1 &amp;&amp; return xi -&gt; 1.0
+    Pm1 = get_legendre_polynomial_derivative(n-1)
+    Pm2 = get_legendre_polynomial_derivative(n-2)
+    A(xi) = (2.0*(n-1.0)+1.0)*xi*Pm1(xi)
+    B(xi) = (n+1.0-1.0)*Pm2(xi)
+    return xi -&gt; (A(xi)-B(xi))/(n-1.0)
+end</code></pre><p>And finally implement <code>eval_basis!</code> and <code>eval_dbasis!</code> functions:</p><pre><code class="language-">function eval_basis!{T}(basis::PSeg, N::Matrix{T}, xi::Tuple{T})
+    n = length(basis)
+    t = xi[1]
+    N[1] = 0.5*(1-t)
+    N[2] = 0.5*(1+t)
+    n &lt; 3 &amp;&amp; return N
+    for i=3:n
+        j = i-1
+        P1 = get_legendre_polynomial(j)
+        P2 = get_legendre_polynomial(j-2)
+        N[i] = 1.0/sqrt(2.0*(2.0*j-1.0))*(P1(t)-P2(t))
+    end
+    return N
+end
+
+function eval_dbasis!{T}(basis::PSeg, dN::Matrix{T}, xi::Tuple{T})
+    n = length(basis)
+    t = xi[1]
+    dN[1] = -0.5
+    dN[2] = 0.5
+    n &lt; 3 &amp;&amp; return N
+    for i=3:n
+        j = i-1
+        P1 = get_legendre_polynomial_derivative(j)
+        P2 = get_legendre_polynomial_derivative(j-2)
+        dN[i] = 1.0/sqrt(2.0*(2.0*j-1.0))*(P1(t)-P2(t))
+    end
+    return dN
+end
+
+nothing # hide</code></pre><p>Let&#39;s try it:</p><pre><code class="language-julia-repl">julia&gt; B = PSeg()
+ERROR: UndefVarError: PSeg not defined
+
+julia&gt; N = zeros(1, length(B))
+ERROR: UndefVarError: B not defined
+
+julia&gt; eval_basis!(B, N, (0.0,))
+ERROR: UndefVarError: eval_basis! not defined
+
+julia&gt; B.order = 2
+ERROR: UndefVarError: B not defined
+
+julia&gt; N = zeros(1, length(B))
+ERROR: UndefVarError: B not defined
+
+julia&gt; eval_basis!(B, N, (0.0,))
+ERROR: UndefVarError: eval_basis! not defined</code></pre><p><img src="../figs/pbasis.svg" alt="Hierarchical shape functions up to order 6"/></p><footer><hr/><a class="previous" href="../fields/"><span class="direction">Previous</span><span class="title">Fields</span></a><a class="next" href="../integration/"><span class="direction">Next</span><span class="title">Integration</span></a></footer></article></body></html>

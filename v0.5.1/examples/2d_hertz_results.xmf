@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Xdmf xmlns:xi="http://www.w3.org/2001/XInclude" Version="3.0">
+  <Domain>
+    <Grid GridType="Collection" Name="Time" CollectionType="Temporal">
+      <Grid GridType="Collection" Name="Problems" CollectionType="Spatial">
+        <Time Value="0.0"/>
+        <Grid Name="cylinder">
+          <Geometry Type="XY">
+            <DataItem DataType="Float" Dimensions="84 2" Format="HDF">2d_hertz_results.h5:/DataItem_1</DataItem>
+          </Geometry>
+          <Topology TopologyType="Mixed">
+            <DataItem DataType="Int" Dimensions="532" Format="HDF">2d_hertz_results.h5:/DataItem_2</DataItem>
+          </Topology>
+          <Attribute Name="Displacement" Center="Node" AttributeType="Vector">
+            <DataItem DataType="Float" Dimensions="84 3" Format="HDF">2d_hertz_results.h5:/DataItem_3</DataItem>
+          </Attribute>
+        </Grid>
+        <Grid Name="block">
+          <Geometry Type="XY">
+            <DataItem DataType="Float" Dimensions="191 2" Format="HDF">2d_hertz_results.h5:/DataItem_4</DataItem>
+          </Geometry>
+          <Topology TopologyType="Mixed">
+            <DataItem DataType="Int" Dimensions="1312" Format="HDF">2d_hertz_results.h5:/DataItem_5</DataItem>
+          </Topology>
+          <Attribute Name="Displacement" Center="Node" AttributeType="Vector">
+            <DataItem DataType="Float" Dimensions="191 3" Format="HDF">2d_hertz_results.h5:/DataItem_6</DataItem>
+          </Attribute>
+        </Grid>
+        <Grid Name="fixed">
+          <Geometry Type="XY">
+            <DataItem DataType="Float" Dimensions="11 2" Format="HDF">2d_hertz_results.h5:/DataItem_7</DataItem>
+          </Geometry>
+          <Topology TopologyType="Mixed">
+            <DataItem DataType="Int" Dimensions="40" Format="HDF">2d_hertz_results.h5:/DataItem_8</DataItem>
+          </Topology>
+          <Attribute Name="Lambda" Center="Node" AttributeType="Vector">
+            <DataItem DataType="Float" Dimensions="11 3" Format="HDF">2d_hertz_results.h5:/DataItem_9</DataItem>
+          </Attribute>
+          <Attribute Name="Displacement" Center="Node" AttributeType="Vector">
+            <DataItem DataType="Float" Dimensions="11 3" Format="HDF">2d_hertz_results.h5:/DataItem_10</DataItem>
+          </Attribute>
+        </Grid>
+        <Grid Name="symmetry line 23">
+          <Geometry Type="XY">
+            <DataItem DataType="Float" Dimensions="13 2" Format="HDF">2d_hertz_results.h5:/DataItem_11</DataItem>
+          </Geometry>
+          <Topology TopologyType="Mixed">
+            <DataItem DataType="Int" Dimensions="44" Format="HDF">2d_hertz_results.h5:/DataItem_12</DataItem>
+          </Topology>
+          <Attribute Name="Lambda" Center="Node" AttributeType="Vector">
+            <DataItem DataType="Float" Dimensions="13 3" Format="HDF">2d_hertz_results.h5:/DataItem_13</DataItem>
+          </Attribute>
+          <Attribute Name="Displacement" Center="Node" AttributeType="Vector">
+            <DataItem DataType="Float" Dimensions="13 3" Format="HDF">2d_hertz_results.h5:/DataItem_14</DataItem>
+          </Attribute>
+        </Grid>
+        <Grid Name="point load">
+          <Geometry Type="XY">
+            <DataItem DataType="Float" Dimensions="1 2" Format="HDF">2d_hertz_results.h5:/DataItem_15</DataItem>
+          </Geometry>
+          <Topology TopologyType="Mixed">
+            <DataItem DataType="Int" Dimensions="2" Format="HDF">2d_hertz_results.h5:/DataItem_16</DataItem>
+          </Topology>
+          <Attribute Name="Displacement" Center="Node" AttributeType="Vector">
+            <DataItem DataType="Float" Dimensions="1 3" Format="HDF">2d_hertz_results.h5:/DataItem_17</DataItem>
+          </Attribute>
+        </Grid>
+        <Grid Name="contact">
+          <Geometry Type="XY">
+            <DataItem DataType="Float" Dimensions="14 2" Format="HDF">2d_hertz_results.h5:/DataItem_18</DataItem>
+          </Geometry>
+          <Topology TopologyType="Mixed">
+            <DataItem DataType="Int" Dimensions="48" Format="HDF">2d_hertz_results.h5:/DataItem_19</DataItem>
+          </Topology>
+          <Attribute Name="Lambda" Center="Node" AttributeType="Vector">
+            <DataItem DataType="Float" Dimensions="14 3" Format="HDF">2d_hertz_results.h5:/DataItem_20</DataItem>
+          </Attribute>
+          <Attribute Name="Displacement" Center="Node" AttributeType="Vector">
+            <DataItem DataType="Float" Dimensions="14 3" Format="HDF">2d_hertz_results.h5:/DataItem_21</DataItem>
+          </Attribute>
+        </Grid>
+      </Grid>
+    </Grid>
+  </Domain>
+</Xdmf>

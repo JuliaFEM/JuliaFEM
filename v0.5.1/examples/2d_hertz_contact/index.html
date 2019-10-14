@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>2D Hertz contact problem · JuliaFEM.jl</title><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-83590644-1', 'auto');
+ga('send', 'pageview');
+</script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>JuliaFEM.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">User&#39;s guide</span></li><li><span class="toctext">Examples</span><ul><li class="current"><a class="toctext" href>2D Hertz contact problem</a><ul class="internal"><li class="toplevel"><a class="toctext" href="#Results-1">Results</a></li></ul></li><li><a class="toctext" href="../3d_frame/">Natural frequency analysis of 3d frame structure</a></li><li><a class="toctext" href="../generate_stiffness_matrices/">Generating local matrices for problems</a></li><li><a class="toctext" href="../linear_static/">JuliaFEM Linear Static Example</a></li></ul></li><li><span class="toctext">Developer&#39;s guide</span><ul><li><a class="toctext" href="../../packages/FEMBase/mesh/">Mesh</a></li><li><a class="toctext" href="../../packages/FEMBase/fields/">Fields</a></li><li><a class="toctext" href="../../packages/FEMBase/basis/">Basis functions</a></li><li><a class="toctext" href="../../packages/FEMBase/integration/">Integration</a></li><li><a class="toctext" href="../../packages/FEMBase/elements/">Elements</a></li><li><a class="toctext" href="../../packages/FEMBase/problems/">Problems</a></li><li><a class="toctext" href="../../packages/FEMBase/solvers/">Analyses and solvers</a></li><li><a class="toctext" href="../../packages/FEMBase/postprocessing/">Postprocessing</a></li><li><a class="toctext" href="../../packages/FEMBase/results/">Results</a></li><li><a class="toctext" href="../../packages/FEMBase/materials/">Materials</a></li></ul></li><li><span class="toctext">Description of packages</span><ul><li><a class="toctext" href="../../packages/FEMBase/">FEMBase.jl</a></li><li><a class="toctext" href="../../packages/AsterReader/">AsterReader.jl</a></li><li><a class="toctext" href="../../packages/AbaqusReader/">AbaqusReader.jl documentation</a></li><li><a class="toctext" href="../../packages/HeatTransfer/">HeatTransfer.jl</a></li><li><a class="toctext" href="../../packages/FEMBeam/">Introduction</a></li><li><a class="toctext" href="../../packages/MortarContact2D/">MortarContact2D.jl</a></li><li><a class="toctext" href="../../packages/MortarContact2DAD/">MortarContact2DAD.jl</a></li></ul></li><li><span class="toctext">API documentation</span><ul><li><a class="toctext" href="../../api/">API documentation</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li>Examples</li><li><a href>2D Hertz contact problem</a></li></ul><a class="edit-page" href="https://github.com/JuliaFEM/JuliaFEM.jl/blob/master/examples/2d_hertz_contact.jl"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>2D Hertz contact problem</span><a class="fa fa-bars" href="#"></a></div></header><p>License is MIT: see https://github.com/JuliaFEM/JuliaFEM.jl/blob/master/LICENSE.md</p><h1><a class="nav-anchor" id="D-Hertz-contact-problem-1" href="#D-Hertz-contact-problem-1">2D Hertz contact problem</a></h1><p><img src="model.png" alt/> In the example, a cylinder is pressed agains block with a force of 35 kN. A similar example can be found from NAFEMS report FENET D3613 (advanced finite element contact benchmarks). Solution for maximum pressure <span>$p_0$</span> and contact radius <span>$a$</span> is</p><div>\[  p_{0} = \sqrt{\frac{FE}{2\pi R}}, \\
+  a     = \sqrt{\frac{8FR}{\pi E}},\]</div><p>where</p><div>\[  E = \frac{2E_{1}E_{2}}{E_{2}\left(1-\nu_{1}^{2}\right)+E_{1}\left(1-\nu_{2}^{2}\right)}.\]</div><p>Substituting values, one gets accurate solution to be <span>$p_0 = 3585 \;\mathrm{MPa}$</span> and <span>$a = 6.21 \;\mathrm{mm}$</span>.</p><pre><code class="language-julia">using JuliaFEM, LinearAlgebra</code></pre><p>Simulation starts by reading the mesh. Model is constructed and meshed using SALOME, thus mesh format is .med. Mesh type is quite simple structure, containing things like <code>mesh.nodes</code>, <code>mesh.elements</code> and so on. Keep on mind, that Mesh contains only standard Julia types and we think it as a structure helping us to construct elements needed in simulation. In principle, we don&#39;t need to use <code>Mesh</code> in simulation anyway if we figure some other way to define the geometry for elements.</p><pre><code class="language-julia">datadir = abspath(joinpath(pathof(JuliaFEM), &quot;..&quot;, &quot;..&quot;, &quot;examples&quot;, &quot;2d_hertz_contact&quot;))
+meshfile = joinpath(datadir, &quot;hertz_2d_full.med&quot;)
+mesh = aster_read_mesh(meshfile)
+for (elset_name, element_ids) in mesh.element_sets
+    nel = length(element_ids)
+    println(&quot;Element set $elset_name contains $nel elements.&quot;)
+end
+for (nset_name, node_ids) in mesh.node_sets
+    nno = length(node_ids)
+    println(&quot;Node set $nset_name contains $nno nodes.&quot;)
+end
+nnodes = length(mesh.nodes)
+println(&quot;Total number of nodes in mesh: $nnodes&quot;)
+nelements = length(mesh.elements)
+println(&quot;Total number of elements in mesh: $nelements&quot;)</code></pre><pre><code class="language-none">[ Info: Mesh parsed from Code Aster file /home/travis/build/JuliaFEM/JuliaFEM.jl/examples/2d_hertz_contact/hertz_2d_full.med.
+[ Info: Mesh contains 275 nodes and 557 elements.
+[ Info: Element set FIXED contains 10 elements (10 x Seg2).
+[ Info: Element set OTHER contains 63 elements (63 x Seg2).
+[ Info: Element set BLOCK_TO_CYLINDER contains 6 elements (6 x Seg2).
+[ Info: Element set CYLINDER_TO_BLOCK contains 6 elements (6 x Seg2).
+[ Info: Element set SYM23 contains 11 elements (11 x Seg2).
+[ Info: Element set CYLINDER contains 133 elements (133 x Tri3).
+[ Info: Element set BLOCK contains 328 elements (328 x Tri3).
+Element set FIXED contains 10 elements.
+Element set OTHER contains 63 elements.
+Element set BLOCK_TO_CYLINDER contains 6 elements.
+Element set CYLINDER_TO_BLOCK contains 6 elements.
+Element set SYM23 contains 11 elements.
+Element set CYLINDER contains 133 elements.
+Element set BLOCK contains 328 elements.
+Node set CYLINDER_LOAD contains 1 nodes.
+Node set OTHER contains 270 nodes.
+Node set CYLINDER_CONTACT_POINT contains 1 nodes.
+Node set CYLINDER_RIGHT contains 1 nodes.
+Node set BLOCK_CONTACT_POINT contains 1 nodes.
+Node set CYLINDER_LEFT contains 1 nodes.
+Total number of nodes in mesh: 275
+Total number of elements in mesh: 557</code></pre><p>Next, define two bodies. Technically, we could have only one problem and add elements from both bodies to the same problem, but defining two different problems is recommended for clarity. Plain strain assumption is used. To make clear what is happening here: we first create a set of elements (elements are in vector called <code>upper_elements</code>), then we define new problem which type is <code>Elasticity</code>, give it some meaningful name (this time <code>cylinder</code>), and last value 2 means that problems does have two degrees of freedom per node.</p><pre><code class="language-julia">upper_elements = create_elements(mesh, &quot;CYLINDER&quot;)
+update!(upper_elements, &quot;youngs modulus&quot;, 70.0e3)
+update!(upper_elements, &quot;poissons ratio&quot;, 0.3)
+upper = Problem(Elasticity, &quot;cylinder&quot;, 2)
+upper.properties.formulation = :plane_strain
+add_elements!(upper, upper_elements)
+lower_elements = create_elements(mesh, &quot;BLOCK&quot;)
+update!(lower_elements, &quot;youngs modulus&quot;, 210.0e3)
+update!(lower_elements, &quot;poissons ratio&quot;, 0.3)
+lower = Problem(Elasticity, &quot;block&quot;, 2)
+lower.properties.formulation = :plane_strain
+add_elements!(lower, lower_elements)</code></pre><pre><code class="language-none">[ Info: Created 133 elements (133 x Tri3) from element set: CYLINDER.
+[ Info: Updating field `youngs modulus` =&gt; 70000.0 for 133 elements.
+[ Info: Updating field `poissons ratio` =&gt; 0.3 for 133 elements.
+[ Info: Creating a new problem of type Elasticity, having name `cylinder` and dimension 2 dofs/node.
+[ Info: Adding 133 elements to problem `cylinder`
+[ Info: Created 328 elements (328 x Tri3) from element set: BLOCK.
+[ Info: Updating field `youngs modulus` =&gt; 210000.0 for 328 elements.
+[ Info: Updating field `poissons ratio` =&gt; 0.3 for 328 elements.
+[ Info: Creating a new problem of type Elasticity, having name `block` and dimension 2 dofs/node.
+[ Info: Adding 328 elements to problem `block`</code></pre><p>Next we define some boundary conditions: creating &quot;boundary&quot; problems goes in the same way than defining &quot;field&quot; problems, the only difference is that we add extra argument giving what field are we tring to fix. This time, we have 2 dofs / node and we fix displacement in direction 2.</p><pre><code class="language-julia">bc_fixed_elements = create_elements(mesh, &quot;FIXED&quot;)
+update!(bc_fixed_elements, &quot;displacement 2&quot;, 0.0)
+bc_fixed = Problem(Dirichlet, &quot;fixed&quot;, 2, &quot;displacement&quot;)
+add_elements!(bc_fixed, bc_fixed_elements)</code></pre><pre><code class="language-none">[ Info: Created 10 elements (10 x Seg2) from element set: FIXED.
+[ Info: Updating field `displacement 2` =&gt; 0.0 for 10 elements.
+[ Info: Creating a new boundary problem of type Dirichlet, having name `fixed` and dimension 2 dofs/node. This boundary problems fixes field `displacement`.
+[ Info: Adding 10 elements to problem `fixed`</code></pre><p>Defining symmetry boundary condition goes with the same idea</p><pre><code class="language-julia">bc_sym_23_elements = create_elements(mesh, &quot;SYM23&quot;)
+update!(bc_sym_23_elements, &quot;displacement 1&quot;, 0.0)
+bc_sym_23 = Problem(Dirichlet, &quot;symmetry line 23&quot;, 2, &quot;displacement&quot;)
+add_elements!(bc_sym_23, bc_sym_23_elements)</code></pre><pre><code class="language-none">[ Info: Created 11 elements (11 x Seg2) from element set: SYM23.
+[ Info: Updating field `displacement 1` =&gt; 0.0 for 11 elements.
+[ Info: Creating a new boundary problem of type Dirichlet, having name `symmetry line 23` and dimension 2 dofs/node. This boundary problems fixes field `displacement`.
+[ Info: Adding 11 elements to problem `symmetry line 23`</code></pre><p>Next we define point load. To define that, we first need to find some node near the top of cylinder, using function <code>find_nearest_node</code>. Then we create a new problem, again of type Elasticity. Like told already, we don&#39;t need to use <code>Mesh</code> if we have some other procedure to define the geometry of the element (and it&#39;s connectivity, of course). So we can directly create an element of type <code>Poi1</code>, meaning 1-node point element, update it&#39;s geometry and apply 35.0e3 kN load in negative y-direction:</p><pre><code class="language-julia">nid = find_nearest_node(mesh, [0.0, 100.0])
+load = Problem(Elasticity, &quot;point load&quot;, 2)
+load.properties.formulation = :plane_strain
+load.elements = [Element(Poi1, [nid])]
+update!(load.elements, &quot;geometry&quot;, mesh.nodes)
+update!(load.elements, &quot;displacement traction force 2&quot;, -35.0e3)</code></pre><pre><code class="language-none">[ Info: Creating a new problem of type Elasticity, having name `point load` and dimension 2 dofs/node.
+[ Info: Updating field `geometry` for 1 elements.
+[ Info: Updating field `displacement traction force 2` =&gt; -35000.0 for 1 elements.</code></pre><p>Next, we define another boudary problem, this time the type of problem is Contact2D, which is a mortar contact formulation for two dimensions. Elements are added using <code>add_slave_elements!</code> and <code>add_master_elements!</code>. Problems, in general, can have some properties defined, like the formulation in <code>Elasticity</code> (we also have <code>:plane_stress</code>). For contact, we need to swap normal direction for meshes created by SALOME because in Code Aster, element orientation is defined opposite to what is used in ABAQUS, and in JuliaFEM in general we follow the same conventions what are used in ABAQUS.</p><pre><code class="language-julia">contact = Problem(Contact2D, &quot;contact&quot;, 2, &quot;displacement&quot;)
+contact.properties.rotate_normals = true
+contact_slave_elements = create_elements(mesh, &quot;BLOCK_TO_CYLINDER&quot;)
+contact_master_elements = create_elements(mesh, &quot;CYLINDER_TO_BLOCK&quot;)
+add_master_elements!(contact, contact_master_elements)
+add_slave_elements!(contact, contact_slave_elements)</code></pre><pre><code class="language-none">[ Info: Creating a new boundary problem of type Contact2D, having name `contact` and dimension 2 dofs/node. This boundary problems fixes field `displacement`.
+[ Info: Created 6 elements (6 x Seg2) from element set: BLOCK_TO_CYLINDER.
+[ Info: Created 6 elements (6 x Seg2) from element set: CYLINDER_TO_BLOCK.</code></pre><p>After all problems are defined, we define some <code>Analysis</code>, which can be e.g. static analysis, dynamic analysis, modal analysis, linear perturbation analysis and so on. Here, the analysis type is <code>Nonlinear</code>, which is nonlinear quasistatic analysis. In the same manner as we do <code>add_elements!</code> to add elements to <code>Problem</code>, we use <code>add_problems!</code> to add problems to analysis. Because we are not restricted to some particular input and output formats, we &quot;connect&quot; a <code>ResultsWriter</code> to our analysis, this time we want to visualize results using ParaView, thus we write our results to Xdmf format, which uses well defined standards XML and HDF to store model data.</p><pre><code class="language-julia">analysis = Analysis(Nonlinear)
+add_problems!(analysis, upper, lower, bc_fixed, bc_sym_23, load, contact)
+xdmf = Xdmf(&quot;2d_hertz_results&quot;; overwrite=true)
+add_results_writer!(analysis, xdmf)</code></pre><pre><code class="language-none">[ Info: Creating a new analysis of type Nonlinear with name `Nonlinear Analysis`.
+[ Info: Adding problem `cylinder` to analysis `Nonlinear Analysis`.
+[ Info: Adding problem `block` to analysis `Nonlinear Analysis`.
+[ Info: Adding problem `fixed` to analysis `Nonlinear Analysis`.
+[ Info: Adding problem `symmetry line 23` to analysis `Nonlinear Analysis`.
+[ Info: Adding problem `point load` to analysis `Nonlinear Analysis`.
+[ Info: Adding problem `contact` to analysis `Nonlinear Analysis`.</code></pre><p>In last part, we run the analysis.</p><pre><code class="language-julia">run!(analysis)
+close(xdmf)</code></pre><pre><code class="language-none">[ Info: --------------------------------------------------------------------------------
+[ Info: Starting nonlinear iteration #1
+[ Info: Increment time t=0.0
+[ Info: --------------------------------------------------------------------------------
+[ Info: Updating field `normal` for 6 elements.
+[ Info: Updating field `tangent` for 6 elements.
+[ Info: First contact iteration, initial contact state = AUTO
+[ Info: Average weighted gap = 8.274499442961543, std gap = 6.196825080185221, automatically determined contact state = UNKNOWN
+[ Info: # | A | I | St | Sl | gap | pres | comp
+[ Info: 122 | 0 | 1 |  0 |  0 | 14.938 | 0.0 | -14.938
+[ Info: 133 | 0 | 1 |  0 |  0 | 11.566 | 0.0 | -11.566
+[ Info: 134 | 0 | 1 |  0 |  0 | 2.457 | 0.0 | -2.457
+[ Info: 135 | 0 | 1 |  0 |  0 | 0.0 | 0.0 | -0.0
+[ Info: 137 | 0 | 1 |  0 |  0 | 13.236 | 0.0 | -13.236
+[ Info: 144 | 0 | 1 |  0 |  0 | 2.968 | 0.0 | -2.968
+[ Info: 145 | 0 | 1 |  0 |  0 | 12.757 | 0.0 | -12.757
+[ Info: Solving linear system.
+[ Info: Solved linear system in 0.13 seconds using solver 1. Solution norms (||u||, ||la||): (2.593394620027438e15, 31677.866594832423).
+[ Info:
+[ Info: --------------------------------------------------------------------------------
+[ Info: Starting nonlinear iteration #2
+[ Info: Increment time t=0.0
+[ Info: --------------------------------------------------------------------------------
+[ Info: Updating field `normal` for 6 elements.
+[ Info: Updating field `tangent` for 6 elements.
+[ Info: # | A | I | St | Sl | gap | pres | comp
+[ Info: 122 | 1 | 0 |  0 |  1 | -1.0161082927284144e15 | 0.0 | 1.0161082927284144e15
+[ Info: 133 | 1 | 0 |  0 |  1 | -1.962185119553583e15 | 0.0 | 1.962185119553583e15
+[ Info: 134 | 1 | 0 |  0 |  1 | -1.8135172199303708e15 | 0.0 | 1.8135172199303708e15
+[ Info: 135 | 1 | 0 |  0 |  1 | -1.796453121243904e15 | 0.0 | 1.796453121243904e15
+[ Info: 137 | 1 | 0 |  0 |  1 | -8.972056937770969e14 | 0.0 | 8.972056937770969e14
+[ Info: 144 | 1 | 0 |  0 |  1 | -1.932419818881688e15 | 0.0 | 1.932419818881688e15
+[ Info: 145 | 1 | 0 |  0 |  1 | -1.900612784520093e15 | 0.0 | 1.900612784520093e15
+[ Info: Solving linear system.
+[ Info: Solved linear system in 0.75 seconds using solver 3. Solution norms (||u||, ||la||): (2.5933946200274195e15, 82357.76148154144).
+[ Info:
+[ Info: --------------------------------------------------------------------------------
+[ Info: Starting nonlinear iteration #3
+[ Info: Increment time t=0.0
+[ Info: --------------------------------------------------------------------------------
+[ Info: Updating field `normal` for 6 elements.
+[ Info: Updating field `tangent` for 6 elements.
+[ Info: # | A | I | St | Sl | gap | pres | comp
+[ Info: 122 | 0 | 1 |  0 |  0 | -0.053 | -27236.723 | -27236.67
+[ Info: 133 | 1 | 0 |  0 |  1 | -0.282 | 1641.563 | 1641.845
+[ Info: 134 | 1 | 0 |  0 |  1 | -0.045 | 5184.482 | 5184.527
+[ Info: 135 | 1 | 0 |  0 |  1 | -0.132 | 6554.88 | 6555.012
+[ Info: 137 | 0 | 1 |  0 |  0 | 0.056 | -22934.526 | -22934.582
+[ Info: 144 | 1 | 0 |  0 |  1 | 0.018 | 5026.36 | 5026.342
+[ Info: 145 | 1 | 0 |  0 |  1 | 0.282 | 2387.682 | 2387.4
+[ Info: Solving linear system.
+[ Info: Solved linear system in 0.01 seconds using solver 3. Solution norms (||u||, ||la||): (10.514336619389132, 14737.61979295678).
+[ Info:
+[ Info: --------------------------------------------------------------------------------
+[ Info: Starting nonlinear iteration #4
+[ Info: Increment time t=0.0
+[ Info: --------------------------------------------------------------------------------
+[ Info: Updating field `normal` for 6 elements.
+[ Info: Updating field `tangent` for 6 elements.
+[ Info: # | A | I | St | Sl | gap | pres | comp
+[ Info: 122 | 0 | 1 |  0 |  0 | 9.339 | 0.0 | -9.339
+[ Info: 133 | 0 | 1 |  0 |  0 | 0.0 | -3654.818 | -3654.818
+[ Info: 134 | 1 | 0 |  0 |  1 | -0.0 | 4213.666 | 4213.666
+[ Info: 135 | 1 | 0 |  0 |  1 | 0.0 | 5593.937 | 5593.937
+[ Info: 137 | 0 | 1 |  0 |  0 | 7.905 | 0.0 | -7.905
+[ Info: 144 | 1 | 0 |  0 |  1 | -0.0 | 3889.884 | 3889.884
+[ Info: 145 | 0 | 1 |  0 |  0 | -0.0 | -4278.92 | -4278.92
+[ Info: Solving linear system.
+[ Info: Solved linear system in 0.01 seconds using solver 3. Solution norms (||u||, ||la||): (5.554788342076323, 11615.586412659957).
+[ Info:
+[ Info: --------------------------------------------------------------------------------
+[ Info: Starting nonlinear iteration #5
+[ Info: Increment time t=0.0
+[ Info: --------------------------------------------------------------------------------
+[ Info: Updating field `normal` for 6 elements.
+[ Info: Updating field `tangent` for 6 elements.
+[ Info: # | A | I | St | Sl | gap | pres | comp
+[ Info: 122 | 0 | 1 |  0 |  0 | 11.786 | 0.0 | -11.786
+[ Info: 133 | 0 | 1 |  0 |  0 | 6.698 | 0.0 | -6.698
+[ Info: 134 | 1 | 0 |  0 |  1 | 0.0 | 821.411 | 821.411
+[ Info: 135 | 1 | 0 |  0 |  1 | -0.0 | 4056.018 | 4056.018
+[ Info: 137 | 0 | 1 |  0 |  0 | 10.427 | 0.0 | -10.427
+[ Info: 144 | 1 | 0 |  0 |  1 | -0.0 | 583.517 | 583.517
+[ Info: 145 | 0 | 1 |  0 |  0 | 7.788 | 0.0 | -7.788
+[ Info: Solving linear system.
+[ Info: Solved linear system in 0.01 seconds using solver 3. Solution norms (||u||, ||la||): (3.7284885454952755e-14, 11615.58641265997).
+[ Info:
+[ Info: Converged in 5 iterations.
+[ Info: Postprocessing 6 problems.</code></pre><h1><a class="nav-anchor" id="Results-1" href="#Results-1">Results</a></h1><p>Results are stored in <code>2d_hertz_results.xmf</code> and <code>2d_hertz_results.h5</code> for visual inspection. We can also postprocess results programmatically because we are inside a real scripting / programming environment all the time.  For example, we can integrate the resultant force in normal and tangential direction in contact surface to validate our result.</p><pre><code class="language-julia">Rn = 0.0
+Rt = 0.0
+time = 0.0
+for sel in contact_slave_elements
+    for ip in get_integration_points(sel)
+        global Rn, Rt
+        w = ip.weight*sel(ip, time, Val{:detJ})
+        n = sel(&quot;normal&quot;, ip, time)
+        t = sel(&quot;tangent&quot;, ip, time)
+        la = sel(&quot;lambda&quot;, ip, time)
+        Rn += w*dot(n, la)
+        Rt += w*dot(t, la)
+    end
+end
+println(&quot;2d hertz contact resultant forces: Rn = $Rn, Rt = $Rt&quot;)
+using Test
+@test isapprox(Rn, 35.0e3)
+@test isapprox(Rt, 0.0)</code></pre><pre><code class="language-none">Test Passed</code></pre><p>Visualization of the results can be done using ParaView: <img src="results_displacement.png" alt/> For optimization loops, we want to programmatically find, for example, maximum contact pressure. We can, for example, get all the values in nodes:</p><pre><code class="language-julia">lambda = contact(&quot;lambda&quot;, time)
+normal = contact(&quot;normal&quot;, time)
+p0 = 0.0
+p0_acc = 3585.0
+for (nid, n) in normal
+    lan = dot(n, lambda[nid])
+    println(&quot;$nid =&gt; $lan&quot;)
+    global p0
+    p0 = max(p0, lan)
+end
+p0 = round(p0, digits=2)
+rtol = round(norm(p0-p0_acc)/max(p0,p0_acc)*100, digits=2)
+println(&quot;Maximum contact pressure p0 = $p0, p0_acc = $p0_acc, rtol = $rtol %&quot;)</code></pre><pre><code class="language-none">133 =&gt; 0.0
+135 =&gt; 4056.017756303162
+145 =&gt; 0.0
+144 =&gt; 583.5173932223888
+137 =&gt; 0.0
+122 =&gt; 0.0
+134 =&gt; 821.4109821942362
+Maximum contact pressure p0 = 4056.02, p0_acc = 3585.0, rtol = 11.61 %</code></pre><p>To get rough approximation where does the contact open, we can find the element from slave contact surface, where contact pressure is zero in the other node and something nonzero in the other node.</p><pre><code class="language-julia">a_rad = 0.0
+for element in contact_slave_elements
+    la1, la2 = element(&quot;lambda&quot;, time)
+    p1, p2 = norm(la1), norm(la2)
+    a, b = isapprox(p1, 0.0), isapprox(p2, 0.0)
+    if (a &amp;&amp; !b) || (b &amp;&amp; !a)
+        X1, X2 = element(&quot;geometry&quot;, time)
+        println(&quot;Contact opening element geometry: X1 = $X1, X2 = $X2&quot;)
+        println(&quot;Contact opening element lambda: la1 = $la1, la2 = $la2&quot;)
+        x11, y11 = X1
+        x12, y12 = X2
+        global a_rad
+        a_rad = 1/2*abs(x11+x12)
+        break
+    end
+end
+println(&quot;Contact radius: $a_rad&quot;)</code></pre><pre><code class="language-none">Contact opening element geometry: X1 = [13.658484560848699, 0.0], X2 = [6.566329883460562, 0.0]
+Contact opening element lambda: la1 = [0.0, 0.0], la2 = [0.0, 583.5173932223888]
+Contact radius: 10.11240722215463</code></pre><p>This example briefly described some of the core features of JuliaFEM.</p><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p><footer><hr/><a class="previous" href="../../"><span class="direction">Previous</span><span class="title">Home</span></a><a class="next" href="../3d_frame/"><span class="direction">Next</span><span class="title">Natural frequency analysis of 3d frame structure</span></a></footer></article></body></html>

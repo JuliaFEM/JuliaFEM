@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Simple usage examples · JuliaFEM.jl</title><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-83590644-1', 'auto');
+ga('send', 'pageview');
+</script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>JuliaFEM.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Home</a></li><li><span class="toctext">User&#39;s guide</span></li><li><span class="toctext">Examples</span><ul><li><a class="toctext" href="2d_hertz_contact/">2D Hertz contact problem</a></li><li><a class="toctext" href="3d_frame/">Natural frequency analysis of 3d frame structure</a></li><li><a class="toctext" href="generate_stiffness_matrices/">Generating local matrices for problems</a></li><li><a class="toctext" href="linear_static/">JuliaFEM Linear Static Example</a></li></ul></li><li><span class="toctext">Developer&#39;s guide</span><ul><li><a class="toctext" href="../packages/FEMBase/mesh/">Mesh</a></li><li><a class="toctext" href="../packages/FEMBase/fields/">Fields</a></li><li><a class="toctext" href="../packages/FEMBase/basis/">Basis functions</a></li><li><a class="toctext" href="../packages/FEMBase/integration/">Integration</a></li><li><a class="toctext" href="../packages/FEMBase/elements/">Elements</a></li><li><a class="toctext" href="../packages/FEMBase/problems/">Problems</a></li><li><a class="toctext" href="../packages/FEMBase/solvers/">Analyses and solvers</a></li><li><a class="toctext" href="../packages/FEMBase/postprocessing/">Postprocessing</a></li><li><a class="toctext" href="../packages/FEMBase/results/">Results</a></li><li><a class="toctext" href="../packages/FEMBase/materials/">Materials</a></li></ul></li><li><span class="toctext">Description of packages</span><ul><li><a class="toctext" href="../packages/FEMBase/">FEMBase.jl</a></li><li><a class="toctext" href="../packages/AsterReader/">AsterReader.jl</a></li><li><a class="toctext" href="../packages/AbaqusReader/">AbaqusReader.jl documentation</a></li><li><a class="toctext" href="../packages/HeatTransfer/">HeatTransfer.jl</a></li><li><a class="toctext" href="../packages/FEMBeam/">Introduction</a></li><li><a class="toctext" href="../packages/MortarContact2D/">MortarContact2D.jl</a></li><li><a class="toctext" href="../packages/MortarContact2DAD/">MortarContact2DAD.jl</a></li></ul></li><li><span class="toctext">API documentation</span><ul><li><a class="toctext" href="../api/">API documentation</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Simple usage examples</a></li></ul><a class="edit-page" href="https://github.com/JuliaFEM/JuliaFEM.jl/blob/master/docs/src/examples.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Simple usage examples</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Simple-usage-examples-1" href="#Simple-usage-examples-1">Simple usage examples</a></h1><p>A simple example demonstrating the basic usage of package. Calculate a simple one element model. Add pressure load on top and support block symmetrically.</p><pre><code class="language-julia">X = Dict(
+    1 =&gt; [0.0, 0.0],
+    2 =&gt; [1.0, 0.0],
+    3 =&gt; [1.0, 1.0],
+    4 =&gt; [0.0, 1.0])</code></pre><pre><code class="language-none">Dict{Int64,Array{Float64,1}} with 4 entries:
+  4 =&gt; [0.0, 1.0]
+  2 =&gt; [1.0, 0.0]
+  3 =&gt; [1.0, 1.0]
+  1 =&gt; [0.0, 0.0]</code></pre><pre><code class="language-julia">element = Element(Quad4, [1, 2, 3, 4])
+update!(element, &quot;geometry&quot;, X)
+update!(element, &quot;youngs modulus&quot;, 288.0)
+update!(element, &quot;poissons ratio&quot;, 1/3)</code></pre><pre><code class="language-none">DCTI{Float64}(0.3333333333333333)</code></pre><p>First define a field problem and add element to it</p><pre><code class="language-julia">body = Problem(Elasticity, &quot;test problem&quot;, 2)
+update!(body.properties,
+    &quot;formulation&quot; =&gt; &quot;plane_stress&quot;,
+    &quot;finite_strain&quot; =&gt; &quot;false&quot;,
+    &quot;geometric_stiffness&quot; =&gt; &quot;false&quot;)
+body.elements = [element]</code></pre><pre><code class="language-none">1-element Array{Element{Quad4},1}:
+ Element{Quad4}(-1, [1, 2, 3, 4], FEMBase.Point{IntegrationPoint}[], Dict{String,AbstractField}(&quot;poissons ratio&quot; =&gt; DCTI{Float64}(0.3333333333333333),&quot;geometry&quot; =&gt; DVTId{Array{Float64,1}}(Dict(4 =&gt; [0.0, 1.0],2 =&gt; [1.0, 0.0],3 =&gt; [1.0, 1.0],1 =&gt; [0.0, 0.0])),&quot;youngs modulus&quot; =&gt; DCTI{Float64}(288.0)), Quad4())</code></pre><p>Then create element to carry on pressure</p><pre><code class="language-julia">tr_el = Element(Seg2, [3, 4])
+update!(tr_el, &quot;geometry&quot;, X)
+update!(tr_el, &quot;displacement traction force 2&quot;, 288.0)
+traction = Problem(Elasticity, &quot;pressure on top of block&quot;, 2)
+update!(traction.properties,
+    &quot;formulation&quot; =&gt; &quot;plane_stress&quot;,
+    &quot;finite_strain&quot; =&gt; &quot;false&quot;,
+    &quot;geometric_stiffness&quot; =&gt; &quot;false&quot;)
+traction.elements = [tr_el]</code></pre><pre><code class="language-none">1-element Array{Element{Seg2},1}:
+ Element{Seg2}(-1, [3, 4], FEMBase.Point{IntegrationPoint}[], Dict{String,AbstractField}(&quot;geometry&quot; =&gt; DVTId{Array{Float64,1}}(Dict(4 =&gt; [0.0, 1.0],2 =&gt; [1.0, 0.0],3 =&gt; [1.0, 1.0],1 =&gt; [0.0, 0.0])),&quot;displacement traction force 2&quot; =&gt; DCTI{Float64}(288.0)), Seg2())</code></pre><p>Create boundary condition to support block at bottom and left</p><pre><code class="language-julia">bc_el_1 = Element(Seg2, [1, 2])
+bc_el_2 = Element(Seg2, [4, 1])
+update!(bc_el_1, &quot;displacement 2&quot;, 0.0)
+update!(bc_el_2, &quot;displacement 1&quot;, 0.0)
+bc = Problem(Dirichlet, &quot;add symmetry bc&quot;, 2, &quot;displacement&quot;)
+bc.elements = [bc_el_1, bc_el_2]</code></pre><pre><code class="language-none">2-element Array{Element{Seg2},1}:
+ Element{Seg2}(-1, [1, 2], FEMBase.Point{IntegrationPoint}[], Dict{String,AbstractField}(&quot;displacement 2&quot; =&gt; DCTI{Float64}(0.0)), Seg2())
+ Element{Seg2}(-1, [4, 1], FEMBase.Point{IntegrationPoint}[], Dict{String,AbstractField}(&quot;displacement 1&quot; =&gt; DCTI{Float64}(0.0)), Seg2())</code></pre><p>Last thing is to create a solver, push problem to solver and solve:</p><pre><code class="language-julia">solver = Solver(Linear, body, traction, bc)
+solver()</code></pre><pre><code class="language-none">[ Info: Creating a new analysis of type Linear with name `LinearSolver`.
+┌ Warning: analysis(time) is deprecated. Instead, use run!(analysis)
+└ @ JuliaFEM ~/build/JuliaFEM/JuliaFEM.jl/src/solvers.jl:678
+[ Info: Running linear quasistatic analysis `LinearSolver` at time 0.0.
+[ Info: Assembling 3 problems.
+[ Info: Solving linear system.
+[ Info: Solved linear system in 1.21 seconds using solver 1. Solution norms (||u||, ||la||): (1.49071198499986, 203.64675298172568).
+[ Info:
+[ Info: Postprocessing 3 problems.
+[ Info: No result writers are attached to analysis, not writing output.
+[ Info: To write results to Xdmf file, attach Xdmf to analysis, i.e.
+[ Info: xdmf_output = Xdmf(&quot;simulation_results&quot;)
+[ Info: add_results_writer!(analysis, xdmf_output)
+[ Info: Quasistatic linear analysis ready.</code></pre><p>Displacement in node 3 is</p><pre><code class="language-julia">solver(&quot;displacement&quot;, 0.0)[3]</code></pre><pre><code class="language-none">2-element Array{Float64,1}:
+ -0.3333333333333334
+  1.0000000000000002</code></pre><footer><hr/></footer></article></body></html>
